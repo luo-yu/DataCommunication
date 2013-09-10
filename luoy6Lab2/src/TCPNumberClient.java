@@ -49,16 +49,6 @@ public class TCPNumberClient {
 		}
 	}
 
-	public void connectSocket() {
-		try {
-			Socket socket = new Socket(serverIP, 32100);
-		} catch (UnknownHostException e) {
-
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
 	
 	public void associateStream(){
 		try {
