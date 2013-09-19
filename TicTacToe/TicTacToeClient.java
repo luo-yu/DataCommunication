@@ -1,5 +1,4 @@
 
-
 import java.io.*;
 import java.net.*;
 import java.util.*;
@@ -17,7 +16,6 @@ public class TicTacToeClient {
 	private int rr = 0;
 	private int cc = 0;
 	private int statusCode = 0;
-	private boolean gameOver = false;
 	private InetAddress serverIP = null;
 
 	public TicTacToeClient() {
@@ -27,30 +25,17 @@ public class TicTacToeClient {
 		this.connectToServer();
 		this.associateStream();
 
-		while (!gameOver) {
-			sendClientMove();
-			receiveStatusCode();
-
-			if (this.statusCode == TicTacToeServer.NOT_FULL_CODE) {
-				board[row][col] = -1;
-				receiveServerMove();
-			}
-			gameOver = isGameOver();
+		this.sendClientMove();
+		this.receiveStatusCode();
+		if(this.statusCode==TicTacToeServer.NOT_FULL_CODE){
+			board[row][col]=-1;
+			this.printBoard();
 		}
 		gameMessage();
 		System.out.println("HAHAHAHHAHA");
 
 		this.closeSocket();
-	}
 
-	public boolean isGameOver() {
-		if (statusCode == TicTacToeServer.ILLEGAL_MOVE_CODE
-				|| statusCode == TicTacToeServer.FULL_CODE
-				|| statusCode == TicTacToeServer.CLIENT_WIN_CODE
-				|| statusCode == TicTacToeServer.SERVER_WIN_CODE)
-			return true;
-		else
-			return false;
 	}
 
 	public void readConsole() {
@@ -70,18 +55,20 @@ public class TicTacToeClient {
 	/**
 	 * Client Move
 	 */
-	public void receiveServerMove() {
+	public void receiveServerAndUpdateMove() {
 		try {
 			System.out.println("Reading stuff from server");
 			this.gameMessage();
 			rr = dis.readInt();
 			cc = dis.readInt();
+			this.receiveStatusCode();
 			board[rr][cc] = 1;
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		System.out.println("Computer choose row " + rr + " column " + cc);
 		this.printBoard();
+		
 	}
 
 	/**
@@ -101,11 +88,15 @@ public class TicTacToeClient {
 			this.col = input.nextInt();
 		} while (col > 2);
 
-		try {
-			dos.writeInt(row);
-			dos.writeInt(col);
-		} catch (IOException e) {
-			e.printStackTrace();
+
+		if (this.statusCode == TicTacToeServer.NOT_FULL_CODE) {
+
+			try {
+				dos.writeInt(row);
+				dos.writeInt(col);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 

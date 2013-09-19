@@ -1,5 +1,3 @@
-
-
 import java.io.*;
 import java.net.*;
 import java.util.Random;
@@ -19,7 +17,6 @@ public class TicTacToeServer {
 	private int col = 0; // used to receive client moves
 	private int rr = 0; // used to send server moves
 	private int cc = 0; // used to send server moves
-	private boolean gameOver = false;
 	private DataInputStream dis = null;
 	private DataOutputStream dos = null;
 	private int serverStatusCode = 0;
@@ -34,11 +31,12 @@ public class TicTacToeServer {
 		this.displayContactInfor();
 		this.createClientSocket();
 		this.createClientStreams();
-		while (!gameOver) {
-			this.receiveClientMoves();
-			this.sendStatusCode();
-			if (!isClientWin()) {
-				sendServerMove();
+
+		this.receiveClientAndUpdateMoves();
+		while (this.serverStatusCode == NOT_FULL_CODE) {
+			this.sendAndUpdateServerMove();
+			if (this.serverStatusCode == NOT_FULL_CODE) {
+				this.receiveClientAndUpdateMoves();
 			}
 		}
 
@@ -46,23 +44,7 @@ public class TicTacToeServer {
 		this.closeServer();
 	}
 
-	/**
-	 * /** Server Move
-	 * 
-	 */
-
-	public void sendStatusCode() {
-		this.serverStatusCode = this.assignStatusCode();
-		System.out.println("I am sending status code: " + this.serverStatusCode);
-		try {
-			dos.writeInt(serverStatusCode);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-
-	public void sendServerMove() {
+	public void sendAndUpdateServerMove() {
 
 		Random r = new Random();
 		rr = r.nextInt(3);
@@ -72,29 +54,64 @@ public class TicTacToeServer {
 			rr = r.nextInt(3);
 			cc = r.nextInt(3);
 		}
-		board[rr][cc] = 1;
-		System.out.println("I choose row = " + rr + " col = " + cc);
-		if (!isServerWin()) {
-			try {
-				dos.writeInt(rr);
-				dos.writeInt(cc);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-	}
 
-	public void receiveClientMoves() {
 		try {
-			row = dis.readInt();
-			col = dis.readInt();
-			System.out.println("I received client move: row = " + row + " col = "
-					+ col);
+			dos.writeInt(rr);
+			dos.writeInt(cc);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		if (!isIllegalMove() || !isFull()) {
+
+		checkServerMove();
+
+	}
+
+	public void receiveClientAndUpdateMoves() {
+		try {
+			row = dis.readInt();
+			col = dis.readInt();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		this.checkClientAndRespond();
+
+	}
+
+	public void checkClientAndRespond() {
+		if (isLegalMove(row, col)) {
 			board[row][col] = -1;
+			this.printBoard();
+
+			if (isClientWin() || isServerWin() || isFull()) {
+				this.sendStatusCode();
+				this.printBoard();
+				this.closeClientConnection();
+			} else {
+				this.serverStatusCode = NOT_FULL_CODE;
+				this.sendStatusCode();
+			}
+		} else {
+			this.sendStatusCode();
+			this.closeClientConnection();
+		}
+	}
+
+	public void checkServerMove() {
+		if (isLegalMove(rr, cc)) {
+			board[rr][cc] = 1;
+			this.printBoard();
+
+			if (isClientWin() || isServerWin() || isFull()) {
+				this.sendStatusCode();
+				this.printBoard();
+				this.closeClientConnection();
+			} else {
+				this.serverStatusCode = NOT_FULL_CODE;
+				this.sendStatusCode();
+			}
+		} else {
+			this.sendStatusCode();
+			this.closeClientConnection();
 		}
 	}
 
@@ -117,14 +134,6 @@ public class TicTacToeServer {
 		}
 	}// end printBoard
 
-	/*public boolean isVerifiedClientMove() {
-		boolean isVerified = true;
-		if (isIllegalMove() || isFull()) {
-			isVerified = false;
-		}
-		return isVerified;
-	}*/
-
 	public void createClientSocket() {
 
 		clientSocket = new Socket();
@@ -135,26 +144,14 @@ public class TicTacToeServer {
 		}
 	}
 
-	public int assignStatusCode() {
-		if (isIllegalMove()) {
-			this.gameOver = true;
-			return ILLEGAL_MOVE_CODE;
+	public void sendStatusCode() {
+		System.out
+				.println("I am sending status code: " + this.serverStatusCode);
+		try {
+			dos.writeInt(serverStatusCode);
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
-
-		if (isFull()) {
-			this.gameOver = true;
-			return FULL_CODE;
-		}
-		if (isServerWin()) {
-			this.gameOver = true;
-			return SERVER_WIN_CODE;
-		}
-		if (isClientWin()) {
-			this.gameOver = true;
-			return CLIENT_WIN_CODE;
-		}
-
-		return NOT_FULL_CODE;
 	}
 
 	public boolean isFull() {
@@ -162,12 +159,16 @@ public class TicTacToeServer {
 
 		for (int i = 0; i < board.length; i++) {
 			for (int j = 0; j < board[0].length; j++) {
-				if (board[i][j] == 0) {
+				if (board[i][j]==0) {
 					isFull = false;
 					j = board[0].length - 1;
 					i = board.length - 1;
 				}
 			}
+		}
+
+		if (isFull) {
+			this.serverStatusCode = FULL_CODE;
 		}
 		return isFull;
 	}
@@ -186,6 +187,8 @@ public class TicTacToeServer {
 
 		}
 
+		if (isServerWin)
+			this.serverStatusCode = SERVER_WIN_CODE;
 		return isServerWin;
 	}
 
@@ -203,15 +206,21 @@ public class TicTacToeServer {
 
 		}
 
+		if (isClientWin) {
+			this.serverStatusCode = CLIENT_WIN_CODE;
+		}
 		return isClientWin;
 	}
 
-	public boolean isIllegalMove() {
-		boolean isIllegal = false;
-		System.out.println("In isIllegalMove row = " + row +  " col = " + col);
-		if (board[row][col] ==1 || board[row][col]==-1)
-			isIllegal = true;
-		return isIllegal;
+	public boolean isLegalMove(int row, int col) {
+		boolean isLegal = true;
+		if (board[row][col] != 0)
+			isLegal = false;
+
+		if (!isLegal)
+			this.serverStatusCode = ILLEGAL_MOVE_CODE;
+
+		return isLegal;
 	}
 
 	// OK*******************************************
