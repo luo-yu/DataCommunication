@@ -55,9 +55,11 @@ public class TicTacToeServer {
 		do {
 			try {
 				handleOneClient();
+				board = new int[3][3];
 			} catch (Exception e) {
 				System.err.println("Terminating the game with client.");
 			}
+			
 		} while (true);
 	}
 
@@ -135,9 +137,9 @@ public class TicTacToeServer {
 			this.sendAndUpdateServerMove();
 			this.validateServerMove();
 		} while (!isGameOver());
+		System.out.println("After game over");
 		this.closeClientConnection();
 		this.clientSocket.close();
-		this.resetBoard();
 	}
 
 	/**
@@ -206,8 +208,9 @@ public class TicTacToeServer {
 
 	/**
 	 * Sends server moves to the client
+	 * @throws IOException 
 	 */
-	public void sendAndUpdateServerMove() {
+	public void sendAndUpdateServerMove() throws IOException {
 		Random r = new Random();
 		if (this.statuscode == TicTacToeServer.OK_CODE) {
 			do {
@@ -225,8 +228,8 @@ public class TicTacToeServer {
 				dos.writeInt(this.serverInputRow);
 				dos.writeInt(this.serverInputCol);
 			} catch (IOException e) {
-				System.out.println("Unable to send server moves");
-				e.printStackTrace();
+				System.err.println("Unable to send server moves");
+				throw e;
 			}
 		}
 	}
@@ -246,15 +249,17 @@ public class TicTacToeServer {
 	/**
 	 * Validates server moves and sends status code about server's move back to
 	 * the client
+	 * @throws IOException 
 	 */
-	public void validateServerMove() {
+	public void validateServerMove() throws IOException {
 		this.assignStatusCode();
 
 		try {
 			dos.writeInt(this.statuscode);
 			System.out.println("status code = " + this.statuscode);
 		} catch (IOException e) {
-			System.out.println("Unable to send status code to client");
+			System.err.println("Unable to send status code of server move to client");
+			throw e;
 		}
 
 		if (this.statuscode != TicTacToeServer.OK_CODE) {
