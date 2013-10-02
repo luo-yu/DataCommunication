@@ -137,6 +137,7 @@ public class TicTacToeServer {
 		} while (!isGameOver());
 		this.closeClientConnection();
 		this.clientSocket.close();
+		this.resetBoard();
 	}
 
 	/**
@@ -156,19 +157,17 @@ public class TicTacToeServer {
 
 	/**
 	 * Receives client moves
+	 * @throws IOException 
 	 */
-	public void receiveClientMove() {
+	public void receiveClientMove() throws IOException {
 		try {
 			this.clientInputRow = dis.readInt();
 			this.clientInputCol = dis.readInt();
-			if (board[clientInputRow][clientInputCol] == 1
-					|| board[clientInputRow][clientInputCol] == -1) {
-				this.statuscode = TicTacToeServer.ILLEGAL_MOVE_CODE;
-			}
 			System.out.println("Received Client row " + this.clientInputRow
 					+ " column " + this.clientInputCol);
 		} catch (IOException e) {
-			System.out.println("Unable to receive client move");
+			System.err.println("Unable to receive client move");
+			throw e;
 		}
 
 	}
@@ -181,6 +180,11 @@ public class TicTacToeServer {
 	 */
 	public void validateAndUpdateClientMove() throws IOException {
 		this.assignStatusCode();
+		if (this.clientInputRow < 0 || this.clientInputCol < 0
+				|| board[clientInputRow][clientInputCol] != 0) {
+			this.statuscode = TicTacToeServer.ILLEGAL_MOVE_CODE;
+		}
+
 		try {
 			dos.writeInt(statuscode);
 
@@ -223,6 +227,18 @@ public class TicTacToeServer {
 			} catch (IOException e) {
 				System.out.println("Unable to send server moves");
 				e.printStackTrace();
+			}
+		}
+	}
+
+	/**
+	 * Resets the board to empty baord so that the server can play with another
+	 * client
+	 */
+	protected void resetBoard() {
+		for (int i = 0; i < board.length; i++) {
+			for (int j = 0; i < board[0].length; j++) {
+				board[i][j] = 0;
 			}
 		}
 	}
