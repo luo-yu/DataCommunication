@@ -28,9 +28,7 @@ public class TicTacToeServer {
 	public static int CLIENT_WIN_CODE = 40;
 	public static int ILLEGAL_MOVE_CODE = 50;
 	private ServerSocket serverSocket = null;
-
 	private Socket clientSocket = null;
-
 	private DataOutputStream dos = null;
 	private DataInputStream dis = null;
 	private int clientInputRow;
@@ -51,14 +49,22 @@ public class TicTacToeServer {
 		this.closeServer();
 	}
 
+	protected void reset() {
+		for (int i = 0; i < board.length; i++) {
+			for (int j = 0; j < board[0].length; j++) {
+				board[i][j] = 0;
+			}
+		}
+	}
+
 	/**
 	 * Plays game with infinite number of clients
 	 */
 	protected void playGames() {
 		do {
 			try {
+				this.reset();
 				handleOneClient();
-				board = new int[3][3];
 			} catch (Exception e) {
 				System.err.println("Terminating the game with client.");
 			}
@@ -67,33 +73,50 @@ public class TicTacToeServer {
 	}
 
 	/**
+	 * Assigns status code to each possible scenario.
+	 */
+	protected void handleOneClient() throws Exception {
+
+		this.clientSocket = serverSocket.accept();
+		this.createClientStreams();
+		do {
+			this.receiveClientMove();
+			this.validateAndUpdateClientMove();
+			this.sendAndUpdateServerMove();
+			this.validateServerMove();
+		} while (!isGameOver());
+		System.out.println("After game over");
+		this.closeClientConnection();
+		this.clientSocket.close();
+	}
+
+	/**
 	 * Check to see if a game is over
 	 * 
 	 * @return true if the game is over, false otherwise.
 	 */
 	protected boolean isGameOver() {
+
 		System.out.println("checking if game is over");
+
 		if (this.statuscode != TicTacToeServer.OK_CODE) {
+
 			System.out.println("Returning in game over 1");
 			return true;
+
 		} else if (this.clientInputRow < 0 || this.clientInputCol < 0) {
 			System.out.println("Returning in game over 2");
 			return true;
 		} else if (isFull()) {
 			System.out.println("Returning in game over 3");
 			return true;
-
 		} else if (isClientWin()) {
 			System.out.println("Returning in game over 4");
 			return true;
-
 		} else if (isServerWin()) {
 			System.out.println("Returning in game over 4");
 			return true;
-
-		}
-
-		else {
+		} else {
 			return false;
 		}
 	}
@@ -141,40 +164,6 @@ public class TicTacToeServer {
 	}
 
 	/**
-	 * Assigns status code to each possible scenario.
-	 */
-	protected void handleOneClient() throws Exception {
-
-		this.clientSocket = new Socket();
-		this.clientSocket = serverSocket.accept();
-		this.createClientStreams();
-		do {
-			this.receiveClientMove();
-			this.validateAndUpdateClientMove();
-			this.sendAndUpdateServerMove();
-			this.validateServerMove();
-		} while (!isGameOver());
-		System.out.println("After game over");
-		this.closeClientConnection();
-		this.clientSocket.close();
-	}
-
-	/**
-	 * Creates client streams
-	 * 
-	 * @throws IOException
-	 */
-	protected void createClientStreams() throws IOException {
-		try {
-			dos = new DataOutputStream(this.clientSocket.getOutputStream());
-			dis = new DataInputStream(this.clientSocket.getInputStream());
-		} catch (IOException e) {
-			System.err.println("Couldn't make stream connection with client");
-			throw e;
-		}
-	}
-
-	/**
 	 * Receives client moves
 	 * 
 	 * @throws IOException
@@ -218,8 +207,6 @@ public class TicTacToeServer {
 			System.out.println();
 			this.printBoard();
 
-		} else {
-			this.closeClientConnection();
 		}
 	}
 
@@ -253,18 +240,6 @@ public class TicTacToeServer {
 	}
 
 	/**
-	 * Resets the board to empty board so that the server can play with another
-	 * client
-	 */
-	protected void resetBoard() {
-		for (int i = 0; i < board.length; i++) {
-			for (int j = 0; i < board[0].length; j++) {
-				board[i][j] = 0;
-			}
-		}
-	}
-
-	/**
 	 * Validates server moves and sends status code about server's move back to
 	 * the client
 	 * 
@@ -272,7 +247,6 @@ public class TicTacToeServer {
 	 */
 	protected void validateServerMove() throws IOException {
 		this.assignStatusCode();
-
 		try {
 			dos.writeInt(this.statuscode);
 			System.out.println("status code = " + this.statuscode);
@@ -280,10 +254,6 @@ public class TicTacToeServer {
 			System.err
 					.println("Unable to send status code of server move to client");
 			throw e;
-		}
-
-		if (this.statuscode != TicTacToeServer.OK_CODE) {
-			this.closeClientConnection();
 		}
 	}
 
@@ -347,6 +317,21 @@ public class TicTacToeServer {
 			}
 		}
 		return isFull;
+	}
+
+	/**
+	 * Creates client streams
+	 * 
+	 * @throws IOException
+	 */
+	protected void createClientStreams() throws IOException {
+		try {
+			dos = new DataOutputStream(this.clientSocket.getOutputStream());
+			dis = new DataInputStream(this.clientSocket.getInputStream());
+		} catch (IOException e) {
+			System.err.println("Couldn't make stream connection with client");
+			throw e;
+		}
 	}
 
 	/**

@@ -40,11 +40,17 @@ public class TicTacToeClient {
 	 * Constructs and initializes TicTacToeClient
 	 */
 	public TicTacToeClient() {
-		readConsole();
-		connectToServer();
-		associateStream();
-		this.printBoard();
+		this.readConsole();
+		this.connectToServer();
+		this.associateStream();
+		this.playGame();
+		this.gameMessage();
+		this.closeSocket();
 
+	}
+
+	protected void playGame() {
+		this.printBoard();
 		// Send initial client move
 		sendMove();
 		// receive initial status code about the initial client move
@@ -66,8 +72,6 @@ public class TicTacToeClient {
 				receiveClientMoveCode();
 			}
 		}
-		this.gameMessage();
-		this.closeSocket();
 	}
 
 	/**
@@ -138,20 +142,6 @@ public class TicTacToeClient {
 	}
 
 	/**
-	 * Connects client stream to the server
-	 */
-	protected void associateStream() {
-		try {
-			dos = new DataOutputStream(s.getOutputStream());
-			dis = new DataInputStream(s.getInputStream());
-		} catch (IOException e) {
-
-			e.printStackTrace();
-		}
-
-	}
-
-	/**
 	 * Sends client moves to the server
 	 */
 	protected void sendMove() {
@@ -214,6 +204,20 @@ public class TicTacToeClient {
 			System.out.println("Unable to read the status code for "
 					+ "server's move");
 		}
+	}
+
+	/**
+	 * Connects client stream to the server
+	 */
+	protected void associateStream() {
+		try {
+			dos = new DataOutputStream(s.getOutputStream());
+			dis = new DataInputStream(s.getInputStream());
+		} catch (IOException e) {
+
+			e.printStackTrace();
+		}
+
 	}
 
 	/**
