@@ -62,7 +62,7 @@ public class TicTacToeServer {
 			} catch (Exception e) {
 				System.err.println("Terminating the game with client.");
 			}
-			
+
 		} while (true);
 	}
 
@@ -79,7 +79,21 @@ public class TicTacToeServer {
 		} else if (this.clientInputRow < 0 || this.clientInputCol < 0) {
 			System.out.println("Returning in game over 2");
 			return true;
-		} else {
+		} else if (isFull()) {
+			System.out.println("Returning in game over 3");
+			return true;
+
+		} else if (isClientWin()) {
+			System.out.println("Returning in game over 4");
+			return true;
+
+		} else if (isServerWin()) {
+			System.out.println("Returning in game over 4");
+			return true;
+
+		}
+
+		else {
 			return false;
 		}
 	}
@@ -162,7 +176,8 @@ public class TicTacToeServer {
 
 	/**
 	 * Receives client moves
-	 * @throws IOException 
+	 * 
+	 * @throws IOException
 	 */
 	protected void receiveClientMove() throws IOException {
 		try {
@@ -192,18 +207,17 @@ public class TicTacToeServer {
 
 		try {
 			dos.writeInt(statuscode);
-
 			System.out.println("Status code = " + this.statuscode);
 		} catch (IOException e1) {
 			System.err.println("Unable to write status code to client");
 			throw e1;
 		}
 
-
 		if (this.statuscode == TicTacToeServer.OK_CODE) {
 			board[this.clientInputRow][this.clientInputCol] = -1;
 			System.out.println();
 			this.printBoard();
+
 		} else {
 			this.closeClientConnection();
 		}
@@ -211,7 +225,8 @@ public class TicTacToeServer {
 
 	/**
 	 * Sends server moves to the client
-	 * @throws IOException 
+	 * 
+	 * @throws IOException
 	 */
 	protected void sendAndUpdateServerMove() throws IOException {
 		Random r = new Random();
@@ -252,7 +267,8 @@ public class TicTacToeServer {
 	/**
 	 * Validates server moves and sends status code about server's move back to
 	 * the client
-	 * @throws IOException 
+	 * 
+	 * @throws IOException
 	 */
 	protected void validateServerMove() throws IOException {
 		this.assignStatusCode();
@@ -261,7 +277,8 @@ public class TicTacToeServer {
 			dos.writeInt(this.statuscode);
 			System.out.println("status code = " + this.statuscode);
 		} catch (IOException e) {
-			System.err.println("Unable to send status code of server move to client");
+			System.err
+					.println("Unable to send status code of server move to client");
 			throw e;
 		}
 
