@@ -1,0 +1,90 @@
+ 9. Below is a TCP client that sends a variable number of floats to a server to be multiplied together and then receives the product back from the server.
+ On the next page write a server that will respond appropriately to the client. The server should be single threaded. After responding to ten clients,
+ it should shut down. Do not worry about handling exceptions. Throw them to the OS. Place all your code in the class constructor (24 points)
+
+public class TCPClient {
+	
+	Scanner scan = new Scanner(System.in);
+
+	public TCPClient() throws Exception
+	{
+	   Socket clientSock = new Socket("127.0.0.1", 6789);
+		
+	   DataOutputStream dos = new DataOutputStream(clientSock.getOutputStream()); 
+	   DataInputStream dis = new DataInputStream(clientSock.getInputStream());
+		
+	   System.out.print("Enter the number of floats to be multiplied together: ");
+	   int numberOfFloats = scan.nextInt();
+		
+	   dos.writeInt(numberOfFloats);
+		
+	   for (int i = 0; i < numberOfFloats; i++ ) {
+			
+	      System.out.print("Enter a float: ");
+	      dos.writeFloat(scan.nextFloat());
+	   }
+	
+	   System.out.print("Product of the floats is : " + dis.readDouble() );
+	   clientSock.close();
+	
+	} // end TCPClient
+	
+	public static void main(String[] args)  throws Exception{
+		
+		new TCPClient();
+	} // end main
+	
+}// end TCPClient class	
+ 
+
+
+
+
+
+
+
+
+###########################################
+Solution
+
+
+
+
+
+
+
+
+
+
+import java.io.*;
+import java.net.*;
+
+public class TCPServer {
+	public static void main(String[] args) throws Exception {
+		new TCPServer();
+	}
+
+	public TCPServer() throws Exception {
+		
+		ServerSocket ss = new ServerSocket(6789);
+		Socket s = ss.accept();
+		
+		DataInputStream dis = new DataInputStream(s.getInputStream());
+		DataOutputStream dos = new DataOutputStream(s.getOutputStream());
+		
+		int numberOfFloats = dis.readInt();
+		double result = 1;
+		for(int i =0; i<numberOfFloats; i++){
+			result = result * dis.readFloat();
+		}
+		dos.writeDouble(result);
+		dis.close();
+		dos.close();
+		s.close();
+		ss.close();
+		
+		
+	}
+	
+	
+}
