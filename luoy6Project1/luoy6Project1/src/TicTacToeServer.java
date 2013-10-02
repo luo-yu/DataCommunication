@@ -27,12 +27,12 @@ public class TicTacToeServer {
 	public static int SERVER_WIN_CODE = 30;
 	public static int CLIENT_WIN_CODE = 40;
 	public static int ILLEGAL_MOVE_CODE = 50;
-	ServerSocket serverSocket = null;
+	private ServerSocket serverSocket = null;
 
-	Socket clientSocket = null;
+	private Socket clientSocket = null;
 
-	DataOutputStream dos = null;
-	DataInputStream dis = null;
+	private DataOutputStream dos = null;
+	private DataInputStream dis = null;
 	private int clientInputRow;
 	private int clientInputCol;
 	private int statuscode;
@@ -51,6 +51,9 @@ public class TicTacToeServer {
 		this.closeServer();
 	}
 
+	/**
+	 * Plays game with infinite number of clients
+	 */
 	protected void playGames() {
 		do {
 			try {
@@ -68,7 +71,7 @@ public class TicTacToeServer {
 	 * 
 	 * @return true if the game is over, false otherwise.
 	 */
-	public boolean isGameOver() {
+	protected boolean isGameOver() {
 		System.out.println("checking if game is over");
 		if (this.statuscode != TicTacToeServer.OK_CODE) {
 			System.out.println("Returning in game over 1");
@@ -84,7 +87,7 @@ public class TicTacToeServer {
 	/**
 	 * Creates a server socket with a port number 32100
 	 */
-	public void createServerSocket() {
+	protected void createServerSocket() {
 		try {
 			this.serverSocket = new ServerSocket(SERVER_PORT);
 		} catch (IOException e) {
@@ -95,7 +98,7 @@ public class TicTacToeServer {
 	/**
 	 * Display information of the server
 	 */
-	public void displayContactInfo() {
+	protected void displayContactInfo() {
 		try {
 			System.out.println("Number Server standing by to accept "
 					+ "Clients:" + "\nIP : " + InetAddress.getLocalHost()
@@ -108,7 +111,7 @@ public class TicTacToeServer {
 	/**
 	 * Assigns status code to each possible scenario.
 	 */
-	public void assignStatusCode() {
+	protected void assignStatusCode() {
 		if (isFull()) {
 			this.statuscode = TicTacToeServer.FULL_CODE;
 			System.out.println("Checking full");
@@ -126,7 +129,7 @@ public class TicTacToeServer {
 	/**
 	 * Assigns status code to each possible scenario.
 	 */
-	public void handleOneClient() throws Exception {
+	protected void handleOneClient() throws Exception {
 
 		this.clientSocket = new Socket();
 		this.clientSocket = serverSocket.accept();
@@ -147,7 +150,7 @@ public class TicTacToeServer {
 	 * 
 	 * @throws IOException
 	 */
-	public void createClientStreams() throws IOException {
+	protected void createClientStreams() throws IOException {
 		try {
 			dos = new DataOutputStream(this.clientSocket.getOutputStream());
 			dis = new DataInputStream(this.clientSocket.getInputStream());
@@ -161,7 +164,7 @@ public class TicTacToeServer {
 	 * Receives client moves
 	 * @throws IOException 
 	 */
-	public void receiveClientMove() throws IOException {
+	protected void receiveClientMove() throws IOException {
 		try {
 			this.clientInputRow = dis.readInt();
 			this.clientInputCol = dis.readInt();
@@ -180,7 +183,7 @@ public class TicTacToeServer {
 	 * 
 	 * @throws IOException
 	 */
-	public void validateAndUpdateClientMove() throws IOException {
+	protected void validateAndUpdateClientMove() throws IOException {
 		this.assignStatusCode();
 		if (this.clientInputRow < 0 || this.clientInputCol < 0
 				|| board[clientInputRow][clientInputCol] != 0) {
@@ -190,12 +193,12 @@ public class TicTacToeServer {
 		try {
 			dos.writeInt(statuscode);
 
+			System.out.println("Status code = " + this.statuscode);
 		} catch (IOException e1) {
 			System.err.println("Unable to write status code to client");
 			throw e1;
 		}
 
-		System.out.println("Status code = " + this.statuscode);
 
 		if (this.statuscode == TicTacToeServer.OK_CODE) {
 			board[this.clientInputRow][this.clientInputCol] = -1;
@@ -210,7 +213,7 @@ public class TicTacToeServer {
 	 * Sends server moves to the client
 	 * @throws IOException 
 	 */
-	public void sendAndUpdateServerMove() throws IOException {
+	protected void sendAndUpdateServerMove() throws IOException {
 		Random r = new Random();
 		if (this.statuscode == TicTacToeServer.OK_CODE) {
 			do {
@@ -235,7 +238,7 @@ public class TicTacToeServer {
 	}
 
 	/**
-	 * Resets the board to empty baord so that the server can play with another
+	 * Resets the board to empty board so that the server can play with another
 	 * client
 	 */
 	protected void resetBoard() {
@@ -251,7 +254,7 @@ public class TicTacToeServer {
 	 * the client
 	 * @throws IOException 
 	 */
-	public void validateServerMove() throws IOException {
+	protected void validateServerMove() throws IOException {
 		this.assignStatusCode();
 
 		try {
@@ -272,7 +275,7 @@ public class TicTacToeServer {
 	 * 
 	 * @return true if the client wins, false otherwise.
 	 */
-	public boolean isClientWin() {
+	protected boolean isClientWin() {
 		boolean isClientWin = false;
 		if (board[0][0] == -1 && board[0][1] == -1 && board[0][2] == -1
 				|| board[1][0] == -1 && board[1][1] == -1 && board[1][2] == -1
@@ -293,7 +296,7 @@ public class TicTacToeServer {
 	 * 
 	 * @return true if the server wins, false otherwise.
 	 */
-	public boolean isServerWin() {
+	protected boolean isServerWin() {
 		boolean isServerWin = false;
 		if (board[0][0] == 1 && board[0][1] == 1 && board[0][2] == 1
 				|| board[1][0] == 1 && board[1][1] == 1 && board[1][2] == 1
@@ -314,7 +317,7 @@ public class TicTacToeServer {
 	 * 
 	 * @return true if the board is full, false otherwise.
 	 */
-	public boolean isFull() {
+	protected boolean isFull() {
 		boolean isFull = true;
 
 		for (int i = 0; i < board.length; i++) {
@@ -332,7 +335,7 @@ public class TicTacToeServer {
 	/**
 	 * Closes client streams and client sockets.
 	 */
-	public void closeClientConnection() {
+	protected void closeClientConnection() {
 		try {
 			this.clientSocket.close();
 			dis.close();
@@ -348,7 +351,7 @@ public class TicTacToeServer {
 	/**
 	 * Closes the server
 	 */
-	public void closeServer() {
+	protected void closeServer() {
 		try {
 			this.serverSocket.close();
 		} catch (IOException e) {
@@ -359,7 +362,7 @@ public class TicTacToeServer {
 	/**
 	 * Prints the current board on the screen
 	 */
-	public void printBoard() {
+	protected void printBoard() {
 		for (int r = 0; r < board.length; r++) {
 			System.out.print("|");
 			for (int c = 0; c < board[0].length; c++) {

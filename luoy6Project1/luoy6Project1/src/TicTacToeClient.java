@@ -75,7 +75,7 @@ public class TicTacToeClient {
 	 * 
 	 * @return true if the game is over, false otherwise.
 	 */
-	public boolean isGameOver() {
+	protected boolean isGameOver() {
 		if (this.statusCode != TicTacToeServer.OK_CODE) {
 			return true;
 		} else {
@@ -86,7 +86,7 @@ public class TicTacToeClient {
 	/**
 	 * Puts the client move on the client board
 	 */
-	public void updateClientMove() {
+	protected void updateClientMove() {
 		if (this.statusCode == TicTacToeServer.OK_CODE) {
 			board[this.clientInputRow][this.clientInputCol] = -1;
 		} else {
@@ -97,7 +97,7 @@ public class TicTacToeClient {
 	/**
 	 * puts the server move on the client board
 	 */
-	public void updateServerMove() {
+	protected void updateServerMove() {
 		if (this.statusCode == TicTacToeServer.OK_CODE) {
 			board[this.serverInputRow][this.serverInputCol] = 1;
 		} else {
@@ -126,7 +126,7 @@ public class TicTacToeClient {
 	/**
 	 * Connects the client to the server
 	 */
-	public void connectToServer() {
+	protected void connectToServer() {
 
 		try {
 			s = new Socket(serverIP, TicTacToeServer.SERVER_PORT);
@@ -140,7 +140,7 @@ public class TicTacToeClient {
 	/**
 	 * Connects client stream to the server
 	 */
-	public void associateStream() {
+	protected void associateStream() {
 		try {
 			dos = new DataOutputStream(s.getOutputStream());
 			dis = new DataInputStream(s.getInputStream());
@@ -154,7 +154,7 @@ public class TicTacToeClient {
 	/**
 	 * Sends client moves to the server
 	 */
-	public void sendMove() {
+	protected void sendMove() {
 		System.out.println("Your Move (Enter negative number to quit)");
 
 		do {
@@ -179,7 +179,7 @@ public class TicTacToeClient {
 	 * Receives status code from the server. This is the status code for client
 	 * move
 	 */
-	public void receiveClientMoveCode() {
+	protected void receiveClientMoveCode() {
 		try {
 			this.statusCode = dis.readInt();
 		} catch (IOException e) {
@@ -191,7 +191,7 @@ public class TicTacToeClient {
 	/**
 	 * Receives server move
 	 */
-	public void receiveServerMove() {
+	protected void receiveServerMove() {
 
 		try {
 			this.serverInputRow = dis.readInt();
@@ -207,7 +207,7 @@ public class TicTacToeClient {
 	 * Receives status code from the server. This is the status code for server
 	 * move
 	 */
-	public void receiveServerMoveCode() {
+	protected void receiveServerMoveCode() {
 		try {
 			this.statusCode = dis.readInt();
 		} catch (IOException e) {
@@ -219,7 +219,7 @@ public class TicTacToeClient {
 	/**
 	 * Closes the socket
 	 */
-	public void closeSocket() {
+	protected void closeSocket() {
 		try {
 			s.close();
 			dis.close();
@@ -233,7 +233,7 @@ public class TicTacToeClient {
 	/**
 	 * Prints client board on the screen
 	 */
-	public void printBoard() {
+	protected void printBoard() {
 		for (int r = 0; r < board.length; r++) {
 			System.out.print("|");
 			for (int c = 0; c < board[0].length; c++) {
@@ -252,7 +252,7 @@ public class TicTacToeClient {
 	/**
 	 * Prints messages when a game is over
 	 */
-	public void gameMessage() {
+	protected void gameMessage() {
 		if (this.statusCode == TicTacToeServer.FULL_CODE) {
 			System.out.println("No empty squares on the board. Draw. "
 					+ "Game over");
