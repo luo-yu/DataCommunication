@@ -13,9 +13,8 @@ import java.net.*;
 import java.util.Random;
 
 /**
- * This is the TicTacToe server. The server will play Tic Tac Toe
- *  with client, and it will also calculate and send status code 
- *  back to the client
+ * This is the TicTacToe server. The server will play Tic Tac Toe with client,
+ * and it will also calculate and send status code back to the client
  * 
  * @author Yu Luo
  * 
@@ -48,9 +47,18 @@ public class TicTacToeServer {
 		this.createServerSocket();
 		this.displayContactInfo();
 		this.printBoard();
-		this.listenForClients();
-		this.closeClientConnection();
+		this.playGames();
 		this.closeServer();
+	}
+
+	protected void playGames() {
+		do {
+			try {
+				handleOneClient();
+			} catch (Exception e) {
+				System.err.println("Terminating the game with client.");
+			}
+		} while (true);
 	}
 
 	/**
@@ -59,23 +67,15 @@ public class TicTacToeServer {
 	 * @return true if the game is over, false otherwise.
 	 */
 	public boolean isGameOver() {
+		System.out.println("checking if game is over");
 		if (this.statuscode != TicTacToeServer.OK_CODE) {
+			System.out.println("Returning in game over 1");
 			return true;
 		} else if (this.clientInputRow < 0 || this.clientInputCol < 0) {
-
+			System.out.println("Returning in game over 2");
 			return true;
 		} else {
-
 			return false;
-		}
-	}
-
-	/**
-	 * Listening for clients
-	 */
-	public void listenForClients() {
-		while (this.clientInputRow >= 0 && this.clientInputCol >= 0) {
-			this.handleOneClient();
 		}
 	}
 
@@ -88,7 +88,6 @@ public class TicTacToeServer {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-
 	}
 
 	/**
@@ -96,16 +95,11 @@ public class TicTacToeServer {
 	 */
 	public void displayContactInfo() {
 		try {
-			System.out
-					.println("Number Server standing by to accept "
-							+ "Clients:"
-							+ "\nIP : "
-							+ InetAddress.getLocalHost()
-							+ "\nPort: "
-							+ serverSocket.getLocalPort() + "\n\n");
+			System.out.println("Number Server standing by to accept "
+					+ "Clients:" + "\nIP : " + InetAddress.getLocalHost()
+					+ "\nPort: " + serverSocket.getLocalPort() + "\n\n");
 		} catch (UnknownHostException e) {
-
-			e.printStackTrace();
+			System.err.println("Unable to display client contact information");
 		}
 	}
 
@@ -115,7 +109,9 @@ public class TicTacToeServer {
 	public void assignStatusCode() {
 		if (isFull()) {
 			this.statuscode = TicTacToeServer.FULL_CODE;
-
+			System.out.println("Checking full");
+		} else if (this.clientInputRow > 2 || this.clientInputCol > 2) {
+			this.statuscode = TicTacToeServer.ILLEGAL_MOVE_CODE;
 		} else if (isClientWin()) {
 			this.statuscode = TicTacToeServer.CLIENT_WIN_CODE;
 		} else if (isServerWin()) {
@@ -128,42 +124,34 @@ public class TicTacToeServer {
 	/**
 	 * Assigns status code to each possible scenario.
 	 */
-	public void handleOneClient() {
-		try {
-			this.clientSocket = new Socket();
-			this.clientSocket = serverSocket.accept();
-		} catch (IOException e) {
+	public void handleOneClient() throws Exception {
 
-			e.printStackTrace();
-		}
+		this.clientSocket = new Socket();
+		this.clientSocket = serverSocket.accept();
 		this.createClientStreams();
-		this.receiveClientMove();
-		this.validateAndUpdateClientMove();
-		while (!isGameOver()) {
-			this.sendAndUpdateServerMove();
-			this.validateServerMove();
+		do {
 			this.receiveClientMove();
 			this.validateAndUpdateClientMove();
-
-		}
+			this.sendAndUpdateServerMove();
+			this.validateServerMove();
+		} while (!isGameOver());
 		this.closeClientConnection();
+		this.clientSocket.close();
 	}
 
 	/**
 	 * Creates client streams
+	 * 
+	 * @throws IOException
 	 */
-	public void createClientStreams() {
-
+	public void createClientStreams() throws IOException {
 		try {
-			dos = new DataOutputStream(
-					this.clientSocket.getOutputStream());
-			dis = new DataInputStream(
-					this.clientSocket.getInputStream());
+			dos = new DataOutputStream(this.clientSocket.getOutputStream());
+			dis = new DataInputStream(this.clientSocket.getInputStream());
 		} catch (IOException e) {
-			System.out.println("Unable to create client streams");
-			e.printStackTrace();
+			System.err.println("Couldn't make stream connection with client");
+			throw e;
 		}
-
 	}
 
 	/**
@@ -173,8 +161,11 @@ public class TicTacToeServer {
 		try {
 			this.clientInputRow = dis.readInt();
 			this.clientInputCol = dis.readInt();
-			System.out.println("Received Client row " 
-			+ this.clientInputRow
+			if (board[clientInputRow][clientInputCol] == 1
+					|| board[clientInputRow][clientInputCol] == -1) {
+				this.statuscode = TicTacToeServer.ILLEGAL_MOVE_CODE;
+			}
+			System.out.println("Received Client row " + this.clientInputRow
 					+ " column " + this.clientInputCol);
 		} catch (IOException e) {
 			System.out.println("Unable to receive client move");
@@ -183,21 +174,21 @@ public class TicTacToeServer {
 	}
 
 	/**
-	 * Validates client's move. If client's move passes the validation,
-	 * then updates the board in server
+	 * Validates client's move. If client's move passes the validation, then
+	 * updates the board in server
+	 * 
+	 * @throws IOException
 	 */
-	public void validateAndUpdateClientMove() {
+	public void validateAndUpdateClientMove() throws IOException {
 		this.assignStatusCode();
-		if (!isLegalClient()) {
-			this.statuscode = TicTacToeServer.ILLEGAL_MOVE_CODE;
-		}
 		try {
 			dos.writeInt(statuscode);
 
 		} catch (IOException e1) {
-			System.out
-					.println("Unable to write status code to client");
+			System.err.println("Unable to write status code to client");
+			throw e1;
 		}
+
 		System.out.println("Status code = " + this.statuscode);
 
 		if (this.statuscode == TicTacToeServer.OK_CODE) {
@@ -219,11 +210,10 @@ public class TicTacToeServer {
 				this.serverInputRow = r.nextInt(3);
 				this.serverInputCol = r.nextInt(3);
 
-			} while (board[this.serverInputRow][this.serverInputCol]!= 0);
+			} while (board[this.serverInputRow][this.serverInputCol] != 0);
 
-			System.out.println("Server move row: "
-					+ this.serverInputRow + " col = "
-					+ this.serverInputCol);
+			System.out.println("Server move row: " + this.serverInputRow
+					+ " col = " + this.serverInputCol);
 			board[this.serverInputRow][this.serverInputCol] = 1;
 			System.out.println();
 			this.printBoard();
@@ -238,8 +228,8 @@ public class TicTacToeServer {
 	}
 
 	/**
-	 * Validates server moves and sends status code about server's 
-	 * move back to the client
+	 * Validates server moves and sends status code about server's move back to
+	 * the client
 	 */
 	public void validateServerMove() {
 		this.assignStatusCode();
@@ -248,8 +238,7 @@ public class TicTacToeServer {
 			dos.writeInt(this.statuscode);
 			System.out.println("status code = " + this.statuscode);
 		} catch (IOException e) {
-			System.out
-					.println("Unable to send status code to client");
+			System.out.println("Unable to send status code to client");
 		}
 
 		if (this.statuscode != TicTacToeServer.OK_CODE) {
@@ -264,18 +253,14 @@ public class TicTacToeServer {
 	 */
 	public boolean isClientWin() {
 		boolean isClientWin = false;
-		if (board[0][0] == -1 && board[0][1] == -1
-				&& board[0][2] == -1 || board[1][0] == -1
-				&& board[1][1] == -1 && board[1][2] == -1
-				|| board[2][0] == -1 && board[2][1] == -1
-				&& board[2][2] == -1 || board[0][0] == -1
-				&& board[1][0] == -1 && board[2][0] == -1
-				|| board[0][1] == -1 && board[1][1] == -1
-				&& board[2][1] == -1 || board[0][2] == -1
-				&& board[1][2] == -1 && board[2][2] == -1
-				|| board[0][0] == -1 && board[1][1] == -1
-				&& board[2][2] == -1 || board[0][2] == -1
-				&& board[1][1] == -1 && board[2][0] == -1) {
+		if (board[0][0] == -1 && board[0][1] == -1 && board[0][2] == -1
+				|| board[1][0] == -1 && board[1][1] == -1 && board[1][2] == -1
+				|| board[2][0] == -1 && board[2][1] == -1 && board[2][2] == -1
+				|| board[0][0] == -1 && board[1][0] == -1 && board[2][0] == -1
+				|| board[0][1] == -1 && board[1][1] == -1 && board[2][1] == -1
+				|| board[0][2] == -1 && board[1][2] == -1 && board[2][2] == -1
+				|| board[0][0] == -1 && board[1][1] == -1 && board[2][2] == -1
+				|| board[0][2] == -1 && board[1][1] == -1 && board[2][0] == -1) {
 			isClientWin = true;
 
 		}
@@ -290,17 +275,13 @@ public class TicTacToeServer {
 	public boolean isServerWin() {
 		boolean isServerWin = false;
 		if (board[0][0] == 1 && board[0][1] == 1 && board[0][2] == 1
-				|| board[1][0] == 1 && board[1][1] == 1
-				&& board[1][2] == 1 || board[2][0] == 1
-				&& board[2][1] == 1 && board[2][2] == 1
-				|| board[0][0] == 1 && board[1][0] == 1
-				&& board[2][0] == 1 || board[0][1] == 1
-				&& board[1][1] == 1 && board[2][1] == 1
-				|| board[0][2] == 1 && board[1][2] == 1
-				&& board[2][2] == 1 || board[0][0] == 1
-				&& board[1][1] == 1 && board[2][2] == 1
-				|| board[0][2] == 1 && board[1][1] == 1
-				&& board[2][0] == 1) {
+				|| board[1][0] == 1 && board[1][1] == 1 && board[1][2] == 1
+				|| board[2][0] == 1 && board[2][1] == 1 && board[2][2] == 1
+				|| board[0][0] == 1 && board[1][0] == 1 && board[2][0] == 1
+				|| board[0][1] == 1 && board[1][1] == 1 && board[2][1] == 1
+				|| board[0][2] == 1 && board[1][2] == 1 && board[2][2] == 1
+				|| board[0][0] == 1 && board[1][1] == 1 && board[2][2] == 1
+				|| board[0][2] == 1 && board[1][1] == 1 && board[2][0] == 1) {
 			isServerWin = true;
 
 		}
@@ -325,37 +306,6 @@ public class TicTacToeServer {
 			}
 		}
 		return isFull;
-	}
-
-	/**
-	 * Determines if a move is legal
-	 * 
-	 * @param row
-	 *            the row for a move
-	 * @param col
-	 *            the column for a move
-	 * @return true if a move is legal, false otherwise.
-	 */
-	public boolean isLegalMove(int row, int col) {
-		boolean isLegal = true;
-		if (row < 0 || col < 0) {
-			isLegal = false;
-		} else {
-			if (board[row][col] != 0) {
-				isLegal = false;
-			}
-
-		}
-		return isLegal;
-	}
-
-	/**
-	 * Determines if a client move is legal
-	 * 
-	 * @return true if it is legal, false otherwise.
-	 */
-	public boolean isLegalClient() {
-		return isLegalMove(this.clientInputRow, this.clientInputCol);
 	}
 
 	/**

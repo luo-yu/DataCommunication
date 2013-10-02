@@ -15,9 +15,9 @@ import java.net.*;
 import java.util.*;
 
 /**
- * This is the client program for this Tic Tac Toe Game. The client 
- * will always have the first move. The client will be able to quit 
- * the program if he or she enters negative value
+ * This is the client program for this Tic Tac Toe Game. The client will always
+ * have the first move. The client will be able to quit the program if he or she
+ * enters negative value
  * 
  * @author Yu Luo
  * 
@@ -45,12 +45,12 @@ public class TicTacToeClient {
 		associateStream();
 		this.printBoard();
 
-		//Send initial client move
+		// Send initial client move
 		sendMove();
-		//receive initial status code about the initial client move
+		// receive initial status code about the initial client move
 		receiveClientMoveCode();
 		this.printBoard();
-		
+
 		// as long as the game is not over, keep sending and
 		// receiving moves and update board
 		while (!isGameOver()) {
@@ -106,8 +106,8 @@ public class TicTacToeClient {
 	}
 
 	/**
-	 * Asks user inputs for ip address, enters 1 if the client wants 
-	 * to use default ip address 127.0.0.1
+	 * Asks user inputs for ip address, enters 1 if the client wants to use
+	 * default ip address 127.0.0.1
 	 */
 	public void readConsole() {
 		System.out.print("Enter the IP address of the server,"
@@ -155,8 +155,7 @@ public class TicTacToeClient {
 	 * Sends client moves to the server
 	 */
 	public void sendMove() {
-		System.out
-				.println("Your Move (Enter negative number to quit)");
+		System.out.println("Your Move (Enter negative number to quit)");
 
 		do {
 			System.out.print("Enter row: ");
@@ -170,14 +169,15 @@ public class TicTacToeClient {
 		try {
 			dos.writeInt(this.clientInputRow);
 			dos.writeInt(this.clientInputCol);
+			System.out.println("Wroted row and col");
 		} catch (IOException e) {
 			System.out.println("Unable to send client inputs");
 		}
 	}
 
 	/**
-	 * Receives status code from the server. This is the status code 
-	 * for client move
+	 * Receives status code from the server. This is the status code for client
+	 * move
 	 */
 	public void receiveClientMoveCode() {
 		try {
@@ -196,26 +196,23 @@ public class TicTacToeClient {
 		try {
 			this.serverInputRow = dis.readInt();
 			this.serverInputCol = dis.readInt();
-			System.out
-					.println("Computer chose row "
-							+ this.serverInputRow + " column "
-							+ this.serverInputCol);
+			System.out.println("Computer chose row " + this.serverInputRow
+					+ " column " + this.serverInputCol);
 		} catch (IOException e) {
 			System.out.println("Unable to receive server move");
 		}
 	}
 
 	/**
-	 * Receives status code from the server. This is the status code
-	 * for server move
+	 * Receives status code from the server. This is the status code for server
+	 * move
 	 */
 	public void receiveServerMoveCode() {
 		try {
 			this.statusCode = dis.readInt();
 		} catch (IOException e) {
-			System.out
-					.println("Unable to read the status code for "
-							+ "server's move");
+			System.out.println("Unable to read the status code for "
+					+ "server's move");
 		}
 	}
 
@@ -260,8 +257,7 @@ public class TicTacToeClient {
 			System.out.println("No empty squares on the board. Draw. "
 					+ "Game over");
 		} else if (this.statusCode == TicTacToeServer.SERVER_WIN_CODE) {
-			System.out.println("The server win!"
-					+ " Game over");
+			System.out.println("The server win!" + " Game over");
 		} else if (this.statusCode == TicTacToeServer.CLIENT_WIN_CODE) {
 			System.out.println("You win! Game over");
 		} else {
