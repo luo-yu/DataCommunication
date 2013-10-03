@@ -15,9 +15,9 @@ import java.net.*;
 import java.util.*;
 
 /**
- * This is the client program for this Tic Tac Toe Game. The client will always
- * have the first move. The client will be able to quit the program if he or she
- * enters negative value
+ * This is the client program for this Tic Tac Toe Game. The client
+ * will always have the first move. The client will be able to quit
+ * the program if he or she enters negative value
  * 
  * @author Yu Luo
  * 
@@ -36,6 +36,7 @@ public class TicTacToeClient {
 
 	private InetAddress serverIP = null;
 
+
 	/**
 	 * Constructs and initializes TicTacToeClient
 	 */
@@ -48,6 +49,7 @@ public class TicTacToeClient {
 		this.closeSocket();
 
 	}
+
 
 	protected void playGame() {
 		this.printBoard();
@@ -74,6 +76,7 @@ public class TicTacToeClient {
 		}
 	}
 
+
 	/**
 	 * Check to see if a game is over
 	 * 
@@ -87,6 +90,7 @@ public class TicTacToeClient {
 		}
 	}
 
+
 	/**
 	 * Puts the client move on the client board
 	 */
@@ -97,6 +101,7 @@ public class TicTacToeClient {
 			this.gameMessage();
 		}
 	}
+
 
 	/**
 	 * puts the server move on the client board
@@ -109,9 +114,10 @@ public class TicTacToeClient {
 		}
 	}
 
+
 	/**
-	 * Asks user inputs for ip address, enters 1 if the client wants to use
-	 * default ip address 127.0.0.1
+	 * Asks user inputs for ip address, enters 1 if the client wants
+	 * to use default ip address 127.0.0.1
 	 */
 	public void readConsole() {
 		System.out.print("Enter the IP address of the server,"
@@ -127,6 +133,7 @@ public class TicTacToeClient {
 		}
 	}
 
+
 	/**
 	 * Connects the client to the server
 	 */
@@ -135,17 +142,20 @@ public class TicTacToeClient {
 		try {
 			s = new Socket(serverIP, TicTacToeServer.SERVER_PORT);
 		} catch (IOException e) {
-			System.out.println("Please check if you have the correct "
-					+ "server IP or Port number");
+			System.out
+					.println("Please check if you have the correct "
+							+ "server IP or Port number");
 			e.printStackTrace();
 		}
 	}
+
 
 	/**
 	 * Sends client moves to the server
 	 */
 	protected void sendMove() {
-		System.out.println("Your Move (Enter negative number to quit)");
+		System.out
+				.println("Your Move (Enter negative number to quit)");
 
 		do {
 			System.out.print("Enter row: ");
@@ -165,9 +175,10 @@ public class TicTacToeClient {
 		}
 	}
 
+
 	/**
-	 * Receives status code from the server. This is the status code for client
-	 * move
+	 * Receives status code from the server. This is the status code
+	 * for client move
 	 */
 	protected void receiveClientMoveCode() {
 		try {
@@ -178,6 +189,7 @@ public class TicTacToeClient {
 		}
 	}
 
+
 	/**
 	 * Receives server move
 	 */
@@ -186,16 +198,18 @@ public class TicTacToeClient {
 		try {
 			this.serverInputRow = dis.readInt();
 			this.serverInputCol = dis.readInt();
-			System.out.println("Computer chose row " + this.serverInputRow
-					+ " column " + this.serverInputCol);
+			System.out.println("Computer chose row "
+					+ this.serverInputRow + " column "
+					+ this.serverInputCol);
 		} catch (IOException e) {
 			System.out.println("Unable to receive server move");
 		}
 	}
 
+
 	/**
-	 * Receives status code from the server. This is the status code for server
-	 * move
+	 * Receives status code from the server. This is the status code
+	 * for server move
 	 */
 	protected void receiveServerMoveCode() {
 		try {
@@ -205,6 +219,7 @@ public class TicTacToeClient {
 					+ "server's move");
 		}
 	}
+
 
 	/**
 	 * Connects client stream to the server
@@ -220,6 +235,7 @@ public class TicTacToeClient {
 
 	}
 
+
 	/**
 	 * Closes the socket
 	 */
@@ -233,6 +249,7 @@ public class TicTacToeClient {
 			e.printStackTrace();
 		}
 	}
+
 
 	/**
 	 * Prints client board on the screen
@@ -253,13 +270,15 @@ public class TicTacToeClient {
 		}
 	}// end printBoard
 
+
 	/**
 	 * Prints messages when a game is over
 	 */
 	protected void gameMessage() {
 		if (this.statusCode == TicTacToeServer.FULL_CODE) {
-			System.out.println("No empty squares on the board. Draw. "
-					+ "Game over");
+			System.out
+					.println("No empty squares on the board. Draw. "
+							+ "Game over");
 		} else if (this.statusCode == TicTacToeServer.SERVER_WIN_CODE) {
 			System.out.println("The server win!" + " Game over");
 		} else if (this.statusCode == TicTacToeServer.CLIENT_WIN_CODE) {
@@ -269,6 +288,7 @@ public class TicTacToeClient {
 		}
 
 	}
+
 
 	public static void main(String[] args) {
 		new TicTacToeClient();

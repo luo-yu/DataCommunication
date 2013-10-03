@@ -13,8 +13,9 @@ import java.net.*;
 import java.util.Random;
 
 /**
- * This is the TicTacToe server. The server will play Tic Tac Toe with client,
- * and it will also calculate and send status code back to the client
+ * This is the TicTacToe server. The server will play Tic Tac Toe with
+ * client, and it will also calculate and send status code back to the
+ * client
  * 
  * @author Yu Luo
  * 
@@ -30,11 +31,11 @@ public class TicTacToeServer {
 	protected ServerSocket serverSocket = null;
 	protected boolean listen = true;
 
+
 	/**
-	 * Constructs and initializes a TicTacToeServer. It creates
-	 * a ServerSocket to use for listening for clients. Displays
-	 * the port number and IP address for the ServerSocket to
-	 * the console. 
+	 * Constructs and initializes a TicTacToeServer. It creates a
+	 * ServerSocket to use for listening for clients. Displays the
+	 * port number and IP address for the ServerSocket to the console.
 	 */
 	public TicTacToeServer() {
 		try {
@@ -42,11 +43,13 @@ public class TicTacToeServer {
 			displayContactInfo();
 		} catch (IOException e) {
 			// Port not available
-			System.err.println("Could not listen on port: " + SERVER_PORT);
+			System.err.println("Could not listen on port: "
+					+ SERVER_PORT);
 			System.exit(-1);
 		}
 
 		listining();
+
 		try {
 			serverSocket.close();
 		} catch (IOException e) {
@@ -55,60 +58,76 @@ public class TicTacToeServer {
 
 	}
 
+
 	/**
-	 * Constructor for the TIcTacToeServer class. It enters an 
-	 * infinite loop to listen for clients. Spawns a new 
+	 * Constructor for the TicTacToeServer class. It enters an
+	 * infinite loop to listen for clients. Spawns a new
 	 * TicTacToeThread object to handle each client.
 	 */
-	protected void listining(){
+	protected void listining() {
 		do {
 			// Create new thread to hand each client.
 			// Pass the Socket object returned by the accept
 			// method to the thread.
 			try {
 
-				new TicTacToeServerThread(serverSocket.accept()).start();
+				new TicTacToeServerThread(serverSocket.accept())
+						.start();
 			} catch (IOException e) {
 				System.err.println("Terminating with client");
 			}
 		} while (listen);
 	}
 
-	
+
 	/**
 	 * Creates a server socket with a port number 32100
+	 * 
+	 * @throws IOException
 	 */
-	protected void createServerSocket() {
+	protected void createServerSocket() throws IOException {
 		try {
 			this.serverSocket = new ServerSocket(SERVER_PORT);
 		} catch (IOException e) {
-			e.printStackTrace();
+			System.err.println("Unable to create server socket");
+			throw e;
 		}
 	}
+
 
 	/**
 	 * Display information of the server
+	 * 
+	 * @throws UnknownHostException
 	 */
-	protected void displayContactInfo() {
+	protected void displayContactInfo() throws UnknownHostException {
 		try {
 			System.out.println("Number Server standing by to accept "
-					+ "Clients:" + "\nIP : " + InetAddress.getLocalHost()
-					+ "\nPort: " + serverSocket.getLocalPort() + "\n\n");
+					+ "Clients:" + "\nIP : "
+					+ InetAddress.getLocalHost() + "\nPort: "
+					+ serverSocket.getLocalPort() + "\n\n");
 		} catch (UnknownHostException e) {
-			System.err.println("Unable to display client contact information");
+			System.err.println("Unable to display client contact"
+					+ " information");
+			throw e;
 		}
 	}
 
+
 	/**
 	 * Closes the server
+	 * 
+	 * @throws IOException
 	 */
-	protected void closeServer() {
+	protected void closeServer() throws IOException {
 		try {
 			this.serverSocket.close();
 		} catch (IOException e) {
-			e.printStackTrace();
+			System.err.println("Unable to close server");
+			throw e;
 		}
 	}
+
 
 	public static void main(String[] args) {
 		new TicTacToeServer();
@@ -116,6 +135,11 @@ public class TicTacToeServer {
 
 }
 
+/**
+ * Class that defines a runnable object (extends Thread) that can
+ * handle a single client.
+ * 
+ */
 class TicTacToeServerThread extends Thread {
 	protected Socket clientSocket = null;
 	protected DataOutputStream dos = null;
@@ -127,8 +151,9 @@ class TicTacToeServerThread extends Thread {
 	private int serverInputCol;
 	public int[][] board = new int[3][3];
 
-	/*
-	 * Sets up class data members. Diplays comuunication info.
+
+	/**
+	 * Sets up class data members. Displays communication info.
 	 */
 	public TicTacToeServerThread(Socket socket) {
 
@@ -141,14 +166,18 @@ class TicTacToeServerThread extends Thread {
 
 	}
 
-	public void run(){
+
+	/**
+	 * 
+	 * Calling this method will causes a separate executing thread. It
+	 * contains all the methods needed to play a game.
+	 */
+	public void run() {
 		try {
 
-			// Instantiate a DataInputStream object around the
-			// inputStream associated with the Socket object
-			// being used to communicate with the client.
-
 			createClientStreams();
+			
+			
 			do {
 				this.receiveClientMove();
 				this.validateAndUpdateClientMove();
@@ -165,6 +194,11 @@ class TicTacToeServerThread extends Thread {
 
 	}// end run
 
+
+	/**
+	 * Reset the board so that every item on the board is 0, meaning
+	 * that there are not any moves yet.
+	 */
 	protected void reset() {
 		for (int i = 0; i < board.length; i++) {
 			for (int j = 0; j < board[0].length; j++) {
@@ -172,6 +206,7 @@ class TicTacToeServerThread extends Thread {
 			}
 		}
 	}
+
 
 	/**
 	 * Check to see if a game is over
@@ -204,6 +239,7 @@ class TicTacToeServerThread extends Thread {
 		}
 	}
 
+
 	/**
 	 * Assigns status code to each possible scenario.
 	 */
@@ -222,6 +258,7 @@ class TicTacToeServerThread extends Thread {
 		}
 	}
 
+
 	/**
 	 * Receives client moves
 	 * 
@@ -231,8 +268,9 @@ class TicTacToeServerThread extends Thread {
 		try {
 			this.clientInputRow = dis.readInt();
 			this.clientInputCol = dis.readInt();
-			System.out.println("Received Client row " + this.clientInputRow
-					+ " column " + this.clientInputCol);
+			System.out.println("Received Client row "
+					+ this.clientInputRow + " column "
+					+ this.clientInputCol);
 		} catch (IOException e) {
 			System.err.println("Unable to receive client move");
 			throw e;
@@ -240,9 +278,10 @@ class TicTacToeServerThread extends Thread {
 
 	}
 
+
 	/**
-	 * Validates client's move. If client's move passes the validation, then
-	 * updates the board in server
+	 * Validates client's move. If client's move passes the
+	 * validation, then updates the board in server
 	 * 
 	 * @throws IOException
 	 */
@@ -257,7 +296,8 @@ class TicTacToeServerThread extends Thread {
 			dos.writeInt(statuscode);
 			System.out.println("Status code = " + this.statuscode);
 		} catch (IOException e1) {
-			System.err.println("Unable to write status code to client");
+			System.err
+					.println("Unable to write status code to client");
 			throw e1;
 		}
 
@@ -268,6 +308,7 @@ class TicTacToeServerThread extends Thread {
 
 		}
 	}
+
 
 	/**
 	 * Sends server moves to the client
@@ -281,10 +322,12 @@ class TicTacToeServerThread extends Thread {
 				this.serverInputRow = r.nextInt(3);
 				this.serverInputCol = r.nextInt(3);
 
-			} while (board[this.serverInputRow][this.serverInputCol] != 0);
+			} while (board[this.serverInputRow][this.serverInputCol] 
+					!= 0);
 
-			System.out.println("Server move row: " + this.serverInputRow
-					+ " col = " + this.serverInputCol);
+			System.out.println("Server move row: "
+					+ this.serverInputRow + " col = "
+					+ this.serverInputCol);
 			board[this.serverInputRow][this.serverInputCol] = 1;
 			System.out.println();
 			this.printBoard();
@@ -298,9 +341,10 @@ class TicTacToeServerThread extends Thread {
 		}
 	}
 
+
 	/**
-	 * Validates server moves and sends status code about server's move back to
-	 * the client
+	 * Validates server moves and sends status code about server's
+	 * move back to the client
 	 * 
 	 * @throws IOException
 	 */
@@ -310,11 +354,12 @@ class TicTacToeServerThread extends Thread {
 			dos.writeInt(this.statuscode);
 			System.out.println("status code = " + this.statuscode);
 		} catch (IOException e) {
-			System.err
-					.println("Unable to send status code of server move to client");
+			System.err.println("Unable to send status code of server"
+							+ " move to client");
 			throw e;
 		}
 	}
+
 
 	/**
 	 * Determines if the client wins the game
@@ -323,19 +368,24 @@ class TicTacToeServerThread extends Thread {
 	 */
 	protected boolean isClientWin() {
 		boolean isClientWin = false;
-		if (board[0][0] == -1 && board[0][1] == -1 && board[0][2] == -1
-				|| board[1][0] == -1 && board[1][1] == -1 && board[1][2] == -1
-				|| board[2][0] == -1 && board[2][1] == -1 && board[2][2] == -1
-				|| board[0][0] == -1 && board[1][0] == -1 && board[2][0] == -1
-				|| board[0][1] == -1 && board[1][1] == -1 && board[2][1] == -1
-				|| board[0][2] == -1 && board[1][2] == -1 && board[2][2] == -1
-				|| board[0][0] == -1 && board[1][1] == -1 && board[2][2] == -1
-				|| board[0][2] == -1 && board[1][1] == -1 && board[2][0] == -1) {
+		if (board[0][0] == -1 && board[0][1] == -1
+				&& board[0][2] == -1 || board[1][0] == -1
+				&& board[1][1] == -1 && board[1][2] == -1
+				|| board[2][0] == -1 && board[2][1] == -1
+				&& board[2][2] == -1 || board[0][0] == -1
+				&& board[1][0] == -1 && board[2][0] == -1
+				|| board[0][1] == -1 && board[1][1] == -1
+				&& board[2][1] == -1 || board[0][2] == -1
+				&& board[1][2] == -1 && board[2][2] == -1
+				|| board[0][0] == -1 && board[1][1] == -1
+				&& board[2][2] == -1 || board[0][2] == -1
+				&& board[1][1] == -1 && board[2][0] == -1) {
 			isClientWin = true;
 
 		}
 		return isClientWin;
 	}
+
 
 	/**
 	 * Determines if the server wins the game
@@ -345,18 +395,23 @@ class TicTacToeServerThread extends Thread {
 	protected boolean isServerWin() {
 		boolean isServerWin = false;
 		if (board[0][0] == 1 && board[0][1] == 1 && board[0][2] == 1
-				|| board[1][0] == 1 && board[1][1] == 1 && board[1][2] == 1
-				|| board[2][0] == 1 && board[2][1] == 1 && board[2][2] == 1
-				|| board[0][0] == 1 && board[1][0] == 1 && board[2][0] == 1
-				|| board[0][1] == 1 && board[1][1] == 1 && board[2][1] == 1
-				|| board[0][2] == 1 && board[1][2] == 1 && board[2][2] == 1
-				|| board[0][0] == 1 && board[1][1] == 1 && board[2][2] == 1
-				|| board[0][2] == 1 && board[1][1] == 1 && board[2][0] == 1) {
+				|| board[1][0] == 1 && board[1][1] == 1
+				&& board[1][2] == 1 || board[2][0] == 1
+				&& board[2][1] == 1 && board[2][2] == 1
+				|| board[0][0] == 1 && board[1][0] == 1
+				&& board[2][0] == 1 || board[0][1] == 1
+				&& board[1][1] == 1 && board[2][1] == 1
+				|| board[0][2] == 1 && board[1][2] == 1
+				&& board[2][2] == 1 || board[0][0] == 1
+				&& board[1][1] == 1 && board[2][2] == 1
+				|| board[0][2] == 1 && board[1][1] == 1
+				&& board[2][0] == 1) {
 			isServerWin = true;
 
 		}
 		return isServerWin;
 	}
+
 
 	/**
 	 * Determines if the board is full
@@ -378,6 +433,7 @@ class TicTacToeServerThread extends Thread {
 		return isFull;
 	}
 
+
 	/**
 	 * Creates client streams
 	 * 
@@ -385,13 +441,17 @@ class TicTacToeServerThread extends Thread {
 	 */
 	protected void createClientStreams() throws IOException {
 		try {
-			dos = new DataOutputStream(this.clientSocket.getOutputStream());
-			dis = new DataInputStream(this.clientSocket.getInputStream());
+			dos = new DataOutputStream(
+					this.clientSocket.getOutputStream());
+			dis = new DataInputStream(
+					this.clientSocket.getInputStream());
 		} catch (IOException e) {
-			System.err.println("Couldn't make stream connection with client");
+			System.err.println("Couldn't make stream connection"
+					+ " with client");
 			throw e;
 		}
 	}
+
 
 	/**
 	 * Closes client streams and client sockets.
@@ -408,6 +468,7 @@ class TicTacToeServerThread extends Thread {
 		}
 
 	}
+
 
 	/**
 	 * Prints the current board on the screen
