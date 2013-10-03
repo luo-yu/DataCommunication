@@ -31,11 +31,15 @@ public class TicTacToeServer {
 	protected boolean listen = true;
 
 	/**
-	 * Constructs and initializes a TicTacToeServer
+	 * Constructs and initializes a TicTacToeServer. It creates
+	 * a ServerSocket to use for listening for clients. Displays
+	 * the port number and IP address for the ServerSocket to
+	 * the console. 
 	 */
 	public TicTacToeServer() {
 		try {
 			serverSocket = new ServerSocket(SERVER_PORT);
+			displayContactInfo();
 		} catch (IOException e) {
 			// Port not available
 			System.err.println("Could not listen on port: " + SERVER_PORT);
@@ -51,7 +55,12 @@ public class TicTacToeServer {
 
 	}
 
-	protected void listining() {
+	/**
+	 * Constructor for the TIcTacToeServer class. It enters an 
+	 * infinite loop to listen for clients. Spawns a new 
+	 * TicTacToeThread object to handle each client.
+	 */
+	protected void listining(){
 		do {
 			// Create new thread to hand each client.
 			// Pass the Socket object returned by the accept
