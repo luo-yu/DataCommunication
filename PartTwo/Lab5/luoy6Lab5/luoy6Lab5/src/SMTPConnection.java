@@ -68,6 +68,7 @@ public class SMTPConnection {
 
 			// Read reply from the server
 			reply = fromServer.readLine();
+			System.out.println(reply);
 
 			// Check the reply from the server
 			if (parseReply(reply) != 250) {
@@ -75,6 +76,8 @@ public class SMTPConnection {
 				System.err.println(reply);
 				throw new IOException();
 			}
+			
+			
 		}
 	} // end makeConnection
 
@@ -93,8 +96,9 @@ public class SMTPConnection {
 			throws IOException {
 		// Send the command
 		// TODO
-		toServer.writeBytes(command + "\r\n");
-
+		System.out.println("calling");
+		toServer.writeBytes(command + CRLF);
+		
 		// Receive the reply
 		// TODO
 		String reply = fromServer.readLine();

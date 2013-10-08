@@ -10,6 +10,7 @@ public interface MailInterfaceListener {
 	/**
 	 * Uses contents of GUI Text fields to construct an
 	 * email message and send it.
+	 
 	 * 
 	 * @returns True if the message was successfully sent. False otherwise.
 	 */

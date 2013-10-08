@@ -21,6 +21,7 @@ public class MessageBuilder implements MailInterfaceListener {
 	private String to;
 	private String subject;
 	private String body;
+	public static final String CRLF = "\r\n";
 
 	// TCP connection to the server.
 	SMTPConnection smtpConnection = null;
@@ -44,6 +45,7 @@ public class MessageBuilder implements MailInterfaceListener {
 	 * 
 	 * @return true if the mail was sent successfully.
 	 */
+	@SuppressWarnings("unused")
 	public boolean sendMail() {
 		// Retrieve the data contained in the text fields and areas of the GUI
 		server = mailFace.getServer();
@@ -55,37 +57,42 @@ public class MessageBuilder implements MailInterfaceListener {
 		// Instantiate an SMTPConnection object if one has not already be
 		// created
 		// TODO
-
 		try {
-			SMTPConnection smtpConection = new SMTPConnection(server);
+			smtpConnection = new SMTPConnection(server);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
+		
+		
 		// Send SMTP commands and check the response to each in order to
 		// send and email message.
 		// TODO
-		try {
-			smtpConnection.send("mail from:<" + from + ">" + "\r\n", 250);
-		
-			
-			smtpConnection.send("rcpt to:<" + to + ">" + "\r\n", 250);
-			smtpConnection.send("data" + "\r\n", 354);
-			String a = "from:" + from + "\r\n" + "to:" + to + "\r\n"
-					+ "subject:" + subject + "\r\n" + body + "\r\n" + "."
-					+ "\r\n";
-			smtpConnection.send(a, 250);
-		} catch (IOException e) {
-			e.printStackTrace();
+		boolean b = false;
+		if (this.isValidAddress(from) && this.isValidAddress(to)) {
+			try {
+				smtpConnection.send("mail from:<" + from + ">" + "\r\n", 250);
+
+				smtpConnection.send("rcpt to:<" + to + ">" + "\r\n", 250);
+
+				smtpConnection.send("data" + "\r\n", 354);
+
+				smtpConnection.send("from:" + from + "\r\n" + "to:" + to
+						+ "\r\n" + "subject:" + subject + "\r\n" + body
+						+ "\r\n" + "." + "\r\n", 250);
+				
+
+			} catch (IOException e) {
+				System.err
+						.println("Something went wrong during the send process");
+			}
 		}
 
 		// Return true if the message sent successfully
 		// TODO
-		
-		return false;
 
-	} // end sendMail
+		return b;
+
+	}// end sendMail
 
 	/**
 	 * Performs any required closing operations and releases resources when the
@@ -94,6 +101,9 @@ public class MessageBuilder implements MailInterfaceListener {
 	public void close() {
 		// If the smtpConnection is not null, close it down.
 		// TODO
+		if (smtpConnection != null) {
+			smtpConnection.close();
+		}
 
 	} // end close
 
