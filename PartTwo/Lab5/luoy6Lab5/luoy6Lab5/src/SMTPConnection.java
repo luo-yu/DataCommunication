@@ -97,7 +97,7 @@ public class SMTPConnection {
 		// Send the command
 		// TODO
 		System.out.println("calling");
-		toServer.writeBytes(command + CRLF);
+		toServer.writeBytes(command);
 		
 		// Receive the reply
 		// TODO

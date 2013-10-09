@@ -60,37 +60,52 @@ public class MessageBuilder implements MailInterfaceListener {
 		try {
 			smtpConnection = new SMTPConnection(server);
 		} catch (IOException e) {
-			e.printStackTrace();
+			System.err.println("Can not instantiate an SMTPConnection object");
 		}
-		
-		
+
 		// Send SMTP commands and check the response to each in order to
 		// send and email message.
 		// TODO
-		boolean b = false;
+
 		if (this.isValidAddress(from) && this.isValidAddress(to)) {
 			try {
-				smtpConnection.send("mail from:<" + from + ">" + "\r\n", 250);
 
-				smtpConnection.send("rcpt to:<" + to + ">" + "\r\n", 250);
+				if (smtpConnection.send("mail from:<" + from + ">" + "\r\n",
+						250) == false) {
+					System.err
+							.println("something went wrong when send mail from command");
+					return false;
+				}
+				if (smtpConnection.send("rcpt to:<" + to + ">" + "\r\n", 250) == false) {
+					System.err
+							.println("something went wrong when send mail from command");
+					return false;
+				}
+				if (smtpConnection.send("data" + "\r\n", 354) == false) {
+					System.err
+							.println("something went wrong when send mail from command");
+					return false;
 
-				smtpConnection.send("data" + "\r\n", 354);
-
-				smtpConnection.send("from:" + from + "\r\n" + "to:" + to
+				}
+				if (smtpConnection.send("from:" + from + "\r\n" + "to:" + to
 						+ "\r\n" + "subject:" + subject + "\r\n" + body
-						+ "\r\n" + "." + "\r\n", 250);
-				
+						+ "\r\n" + "." + "\r\n", 250) == false) {
+					System.err
+							.println("something went wrong when send mail from command");
+					return false;
+				}
 
 			} catch (IOException e) {
-				System.err
-						.println("Something went wrong during the send process");
+				System.err.println("Something went wrong during the send process");
+				return false;
 			}
+		} else {
+			System.err.println("address is not valid");
 		}
-
 		// Return true if the message sent successfully
 		// TODO
 
-		return b;
+		return true;
 
 	}// end sendMail
 

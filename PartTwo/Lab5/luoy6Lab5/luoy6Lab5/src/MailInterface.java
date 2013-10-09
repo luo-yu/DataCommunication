@@ -28,15 +28,15 @@ public class MailInterface extends JFrame
 	
 	// Label and text field for entering the sender of the email
 	private JLabel fromLabel = new JLabel("From: ");
-	private TextField fromField = new TextField("luoy6@miamioh.edu", 40);
+	private TextField fromField = new TextField("", 40);
 	
 	// Label and text field for the recipient of the email
 	private JLabel toLabel = new JLabel("To: "); 
-	private TextField toField = new TextField("luoy6@miamioh.edu", 40);
+	private TextField toField = new TextField("", 40);
 	
 	// Label and text field for entering the subject line of the email
 	private JLabel subjectLabel = new JLabel("Subject: ");
-	private TextField subjectField = new TextField("Hhehehhe", 40);
+	private TextField subjectField = new TextField("", 40);
 	
 	// Label and text area in which the body of the message is entered
 	private JLabel messageLabel = new JLabel("Message: ");
