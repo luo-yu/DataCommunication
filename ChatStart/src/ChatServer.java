@@ -16,6 +16,7 @@ public class ChatServer {
 		} catch (IOException e) {
 			System.err.println("Unable to create server socket");
 		}
+		
 	}
 	
 	
