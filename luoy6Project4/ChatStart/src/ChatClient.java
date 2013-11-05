@@ -1,12 +1,18 @@
 import java.io.*;
 import java.net.*;
+import java.util.Scanner;
 
 public class ChatClient {
 	private Socket socket = null;
 	private DataInputStream dis = null;
 	private DataOutputStream dos = null;
-	private boolean quit = false;
+	private Scanner operation = null;
 
+	/**
+	 * 
+	 * @param address
+	 * @param serverPort
+	 */
 	protected ChatClient(InetAddress address, int serverPort) {
 		System.out.println("Establishing connection...");
 		try {
@@ -15,24 +21,25 @@ public class ChatClient {
 			System.err.println("Unable to create socket");
 		}
 		this.makeStreams();
-		String line = "";
-		while (!line.equals("quit")) {
-			try {
-				line = dis.readLine();
-			} catch (IOException e) {
-				System.err.println("Unable to read line from console");
-			}
-			if (line.equals("quit"))
-				quit = true;
-			else {
-				try {
-					dos.writeUTF(line);
-					dos.flush();
-				} catch (IOException e) {
-					System.err.println("Unable to write line");
-				}
-			}
+		sendOperation();
+
+	}
+
+	private void sendOperation() {
+		System.out
+				.println("If you want to add yourself to the server, enter \'add\' followed by a screen name; \n"
+						+ "if you want to remove yourself from the server, enter \'remove\' followed by a screen name;\n"
+						+ "if you want to request an address of a user, enter \'request\' followed by a screen name"
+						+ "if you want to quit, enter \'quit\'");
+		 operation= new Scanner(System.in);
+		 String temp = operation.nextLine();
+		 
+		 try {
+			dos.writeUTF(temp);
+		} catch (IOException e) {
+			System.err.println("Unable to write operation");
 		}
+
 	}
 
 	protected void makeStreams() {
@@ -55,8 +62,9 @@ public class ChatClient {
 			System.err.println("Unable to close connections");
 		}
 	}
-	
-	public static void main(String args[]) throws NumberFormatException, UnknownHostException{
+
+	public static void main(String args[]) throws NumberFormatException,
+			UnknownHostException {
 		new ChatClient(InetAddress.getByName("127.0.0.1"), ChatServer.port);
 	}
 
